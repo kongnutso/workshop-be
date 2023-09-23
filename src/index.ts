@@ -1,6 +1,8 @@
 // src/app.ts
-import express, { Express, Request, Response } from 'express'
-import  { sequelize, UserModel } from './sequelize';
+import { json } from 'body-parser';
+import express, { Express, Request, Response } from 'express';
+import  { sequelize, StudentModel } from './sequelize';
+import { asyncWrapper } from './utils/asyncWrapper';
 
 const app: Express = express();
 const port: number = 3000;
@@ -13,18 +15,21 @@ const port: number = 3000;
   }
 })();
 
-app.get('/user', async (req: Request, res: Response<{ body: any }>) => {
-  const users = await UserModel.findAll();
-  res.json({ body: users })
-})
+app.use(json({ limit: '26mb' }));
 
-app.post('/user', async (req: Request, res: Response<{ body: any }>) => {
-  const users = await UserModel.create({
+app.get('/student', asyncWrapper(async (req: Request, res: Response<any>) => {
+  const students = await StudentModel.findAll();
+  res.json({ students })
+}))
+
+app.post('/student', asyncWrapper(async (req: Request, res: Response<any>) => {
+  console.log(req.body);
+  const students = await StudentModel.create({
     ...req.body,
     createdAt: new Date(),
     updatedAt: new Date()
   });
-  res.status(201);
-})
+  res.status(201).send();
+}))
 
 app.listen(port, () => console.log(`Application is running on port ${port}`))
